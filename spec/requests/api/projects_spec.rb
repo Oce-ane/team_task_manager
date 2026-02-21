@@ -16,7 +16,6 @@ RSpec.describe "Api::Projects", type: :request do
       before do
         create(:membership, :owner, user: user, project: owned_project)
         create(:membership, user: user, project: member_project)
-        # other_project has no membership for user
       end
 
       it "returns only projects the user is a member of", :aggregate_failures do
