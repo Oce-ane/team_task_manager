@@ -4,7 +4,8 @@ require "rails_helper"
 
 RSpec.describe User, type: :model do
   describe "associations" do
-    # will grow as we add memberships, tasks, etc.
+    it { should have_many(:memberships).dependent(:destroy) }
+    it { should have_many(:projects).through(:memberships) }
   end
 
   describe "validations" do
