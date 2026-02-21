@@ -4,5 +4,9 @@ Rails.application.routes.draw do
   namespace :api do
     post "auth/register", to: "auth#register"
     post "auth/login", to: "auth#login"
+
+    resources :projects, only: %i[index create show] do
+      post :invite, on: :member
+    end
   end
 end
