@@ -7,6 +7,9 @@ Rails.application.routes.draw do
 
     resources :projects, only: %i[index create show] do
       post :invite, on: :member
+      resources :tasks, only: %i[index create]
     end
+
+    resources :tasks, only: %i[update destroy]
   end
 end
