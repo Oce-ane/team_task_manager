@@ -10,6 +10,15 @@ Rails.application.routes.draw do
       resources :tasks, only: %i[index create]
     end
 
-    resources :tasks, only: %i[update destroy]
+    resources :tasks, only: %i[update destroy] do
+      resources :comments, only: %i[index create]
+    end
+
+    resources :comments, only: %i[update destroy]
+
+    resources :notifications, only: :index do
+      patch :read, on: :member
+      patch :read_all, on: :collection
+    end
   end
 end
