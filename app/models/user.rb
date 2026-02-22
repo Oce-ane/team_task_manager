@@ -13,4 +13,8 @@ class User < ApplicationRecord
                     format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :name, presence: true
   validates :password, length: { minimum: 8 }, allow_nil: true
+
+  def as_api_json
+    { id: id, email: email, name: name }
+  end
 end

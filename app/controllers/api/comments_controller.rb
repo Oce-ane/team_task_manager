@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Api::CommentsController < Api::BaseController
+  include Authorizable
+
   before_action :set_task, only: %i[index create]
   before_action :set_comment, only: %i[update destroy]
   before_action :authorize_project_member!, only: %i[index create]
@@ -9,7 +11,7 @@ class Api::CommentsController < Api::BaseController
   def index
     comments = @task.comments.includes(:user).order(created_at: :asc)
 
-    render_success(data: { comments: comments.map { |c| comment_json(c) } })
+    render_success(data: { comments: comments.map(&:as_api_json) })
   end
 
   def create
@@ -17,7 +19,7 @@ class Api::CommentsController < Api::BaseController
 
     if comment.save
       CommentNotificationJob.perform_later(comment.id)
-      render_success(data: { comment: comment_json(comment) }, status: :created)
+      render_success(data: { comment: comment.as_api_json }, status: :created)
     else
       render_error(errors: comment.errors.to_hash(true), status: :unprocessable_entity)
     end
@@ -25,7 +27,7 @@ class Api::CommentsController < Api::BaseController
 
   def update
     if @comment.update(comment_params)
-      render_success(data: { comment: comment_json(@comment) })
+      render_success(data: { comment: @comment.as_api_json })
     else
       render_error(errors: @comment.errors.to_hash(true), status: :unprocessable_entity)
     end
@@ -53,12 +55,6 @@ class Api::CommentsController < Api::BaseController
     render_error(errors: { comment: ["Not found"] }, status: :not_found)
   end
 
-  def authorize_project_member!
-    return if @project&.memberships&.exists?(user_id: current_user.id)
-
-    render_error(errors: { project: ["Access denied"] }, status: :forbidden)
-  end
-
   def authorize_comment_author!
     return if @comment&.user_id == current_user.id
 
@@ -67,13 +63,5 @@ class Api::CommentsController < Api::BaseController
 
   def comment_params
     params.require(:comment).permit(:content)
-  end
-
-  def comment_json(comment)
-    {
-      id: comment.id, task_id: comment.task_id, content: comment.content,
-      created_at: comment.created_at, updated_at: comment.updated_at,
-      user: { id: comment.user.id, email: comment.user.email, name: comment.user.name }
-    }
   end
 end

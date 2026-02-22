@@ -14,4 +14,12 @@ class Task < ApplicationRecord
   scope :by_status, ->(status) { where(status: status) }
   scope :by_priority, ->(priority) { where(priority: priority) }
   scope :by_assignee, ->(assignee_id) { where(assignee_id: assignee_id) }
+
+  def as_api_json
+    {
+      id: id, project_id: project_id, title: title, description: description,
+      status: status, priority: priority, due_date: due_date, assignee_id: assignee_id,
+      assignee: assignee&.as_api_json, created_at: created_at, updated_at: updated_at
+    }
+  end
 end
